@@ -4,8 +4,7 @@ const bcrypt = require('bcrypt');
 const UserSchema = mongoose.Schema({
     username: {
         type: String,
-        require: true,
-        index: { unique: true }
+        require: true
     },
     studentname: {
         type: String,
@@ -22,6 +21,9 @@ const UserSchema = mongoose.Schema({
     grade: {
         type: String,
         required: true
+    },
+    image: {
+        type: String
     }
 });
 

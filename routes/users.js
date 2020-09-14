@@ -47,15 +47,16 @@ function verifyId(faceId1, faceId2, callBack) {
 }
 
 router.post('/register', async function (req, res) {
-    console.log("be hit", req.body)
+    console.log("be hit")
     var user = new User({
         username: req.body.username,
         studentname: req.body.studentname,
         password: User.hashPassword(req.body.password),
         grade: req.body.grade,
-        faceId: req.body.faceId
+        faceId: req.body.faceId,
+        image: req.body.image
     });
-    console.log(user)
+    // console.log(user)
     let promise = user.save();
 
     promise.then(function (doc) {
@@ -74,6 +75,7 @@ router.post('/register', async function (req, res) {
 router.post('/detectface', async function (req, res) {
     var imageUri = req.body.image;
     getFaceId(imageUri, function (response) {
+        console.log(response)
         if (response[0] != undefined) {
             if (response[0].faceId) {
                 console.log(response[0].faceId)
@@ -126,31 +128,39 @@ router.post('/facelogin', async (req, res) => {
 
     promise.then(function (doc) {
         if (doc) {
-            console.log("faceId1", doc.faceId)
-            getFaceId(imageUri, function (response) {
-                console.log(response[0])
-                if (response[0] != undefined) {
-                    var faceId2 = response[0].faceId;
-                    console.log("faceId2", faceId2);
-                    verifyId(doc.faceId, faceId2, function (response) {
-                        console.log(JSON.parse(response));
-                        if (parseFloat(JSON.parse(response).confidence) >= parseFloat(process.env.FACE_API_CONFIDENCE_TRESHOLD)) {
-                            console.log("authenticated")
-                            let token = jwt.sign({ studentname: doc.studentname }, 'secret', { expiresIn: '2h' });
+            console.log("doc", doc.faceId)
 
-                            return res.status(200).json(token);
-                        }
-                        else {
-                            console.log("Not authenticated")
-                            return res.status(500).json({ message: 'Not authenticated' });
-                        }
-                    });
-                }
-                else {
-                    console.log("face not detected")
-                    return res.status(500).json({ message: 'face not detected' });
-                }
+            getFaceId(doc.image, function (response) {
+                console.log(response[0])
+                var faceId1 = response[0].faceId;
+                console.log("faceId1", faceId1);
+                getFaceId(imageUri, function (response) {
+                    console.log(response[0])
+                    if (response[0] != undefined) {
+                        var faceId2 = response[0].faceId;
+                        console.log("faceId2", faceId2);
+                        verifyId(faceId1, faceId2, function (response) {
+                            console.log(JSON.parse(response));
+                            if (parseFloat(JSON.parse(response).confidence) >= parseFloat(process.env.FACE_API_CONFIDENCE_TRESHOLD)) {
+                                console.log("authenticated")
+                                let token = jwt.sign({ studentname: doc.studentname }, 'secret', { expiresIn: '2h' });
+    
+                                return res.status(200).json(token);
+                            }
+                            else {
+                                console.log("Not authenticated")
+                                return res.status(500).json({ message: 'Not authenticated' });
+                            }
+                        });
+                    }
+                    else {
+                        console.log("face not detected")
+                        return res.status(500).json({ message: 'face not detected' });
+                    }
+                });
             });
+
+            
 
         }
         else {
