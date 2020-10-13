@@ -35,6 +35,12 @@ app.get("/", (req, res) => {
 const routeUsers = require('./routes/users');
 app.use("/api/users", routeUsers);
 
+const routeMarks = require('./routes/marks');
+app.use("/api/marks", routeMarks);
+
+const routeSubjects = require('./routes/subjects');
+app.use("/api/subjects", routeSubjects);
+
 mongoose.connect(process.env.DB_CONNECTION,
     { useNewUrlParser: true, useUnifiedTopology: true }, () =>
     console.log("connected to database!")

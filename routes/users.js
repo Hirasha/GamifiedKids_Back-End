@@ -18,7 +18,7 @@ function getFaceId(imageUri, callBack) {
             'Ocp-Apim-Subscription-Key': process.env.FACE_API_KEY,
             'Content-Type': 'application/octet-stream'
         },
-        body: Buffer.from(imageUri.split(",")[1], 'base64')
+        body: Buffer.from(imageUri.split(",")[1],'base64')
     };
     request(options, function (error, response) {
 
@@ -260,4 +260,73 @@ router.post('/multipleFiles', upload.array('files'), async (req, res, next) => {
     res.send({ status: 'ok' });
 });
  */
+
+
+
+//to save the details completed games and update total marks
+router.post('/savemarks/:username', async function (req, res) {
+
+    const id = req.params.username;
+    const user = await User.findOne({ username: id });
+    var completed_games = req.body.completed_games;
+
+
+
+    if (user) {
+
+        var old_games = [];
+
+        user.completed_games.forEach((obj, i) => {
+            var array = {};
+            array.game_id = obj.game_id;
+            array.marks = obj.marks;
+            array.time_spent = obj.time_spent;
+
+            old_games.push(array);
+        });
+
+
+         completed_games.forEach((obj, i) => {
+            var new_array = {};
+            new_array.game_id = obj.game_id;
+            new_array.marks = obj.marks;
+            new_array.time_spent = obj.time_spent;
+
+            old_games.push(new_array);
+
+        });
+
+
+        user.completed_games = old_games;
+
+
+        var cal_marks = 0;
+        user.completed_games.forEach((obj, i) => {
+            cal_marks = cal_marks + obj.marks;
+        });
+
+        user.totalMarks = cal_marks;
+
+    } else {
+        res.status(404).json({ message: "No user found" });
+    }
+        // console.log(user)
+        let promise = user.save();
+    
+        promise.then(function (doc) {
+            return res.status(201).json(doc);
+    
+        });
+    
+        promise.catch(function (err) {
+            return res.status(500).json({ message: 'Error entering marks!' });
+        });
+    
+    
+    
+    });
+
+//to get level vise marks of a student
+
+
 module.exports = router;
