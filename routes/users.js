@@ -46,6 +46,24 @@ function verifyId(faceId1, faceId2, callBack) {
 
 }
 
+function getEmotion(imageUri, callBack) {
+    var options = {
+        'method': 'POST',
+        'url': process.env.FACE_API_HOST + process.env.FACE_API_PATH_DETECT_EMOTION,
+        'headers': {
+            'Ocp-Apim-Subscription-Key': process.env.FACE_API_KEY,
+            'Content-Type': 'application/octet-stream'
+        },
+        body: Buffer.from(imageUri.split(",")[1], 'base64')
+    };
+    request(options, function (error, response) {
+
+        var finalData = JSON.parse(response.body.toString());
+        return callBack(finalData);
+        // console.log(JSON.parse(response.body)[0].faceId)
+    });
+}
+
 router.post('/register', async function (req, res) {
     console.log("be hit")
     var user = new User({
@@ -227,39 +245,6 @@ function verifyToken(req, res, next) {
     })
 }
 
-/* const storage = multer.diskStorage({
-    destination: (req, file, callBack) => {
-        callBack(null, 'uploads')
-    },
-    filename: (req, file, callBack) => {
-        callBack(null, `User_${file.originalname}`)
-    }
-})
-
-const upload = multer({ storage: storage })
- */
-/* router.post('/file', upload.single('file'), async (req, res, next) => {
-    const file = req.file;
-    console.log(file.filename);
-    if (!file) {
-        const error = new Error('No File')
-        error.httpStatusCode = 400
-        return next(error)
-    }
-    res.send(file);
-});
-
-router.post('/multipleFiles', upload.array('files'), async (req, res, next) => {
-    const files = req.files;
-    console.log(files);
-    if (!files) {
-        const error = new Error('No File')
-        error.httpStatusCode = 400
-        return next(error)
-    }
-    res.send({ status: 'ok' });
-});
- */
 
 
 
@@ -327,6 +312,49 @@ router.post('/savemarks/:username', async function (req, res) {
     });
 
 //to get level vise marks of a student
+
+router.post('/getEmotion', async (req, res) => {
+
+    var imageUri = req.body.image;
+
+    getEmotion(imageUri, function (response) {
+        console.log(response[0])
+        var emotions = response[0].faceAttributes.emotion;
+        console.log("emotions", emotions);
+        if (response[0] != undefined) {
+            const emotion = Object.entries(emotions).reduce((a, b) => a[1] > b[1] ? a : b)[0]
+            res.status(200).json({
+                message: "emotion detected",
+                emotion: emotion
+            });
+        }
+        else {
+            console.log("face not detected")
+            return res.status(500).json({ 
+                message: 'face not detected',
+                emotion: null 
+            });
+        }
+    });
+
+});
+
+router.patch('/saveEmotions', async (req, res) => {
+    let emotions = req.body.emotions;
+    let username = req.body.username;
+    User.update({username: username}, { $set: {emotions: emotions}})
+    .exec()
+    .then( result => {
+        console.log(result);
+        res.status(200).json(result);
+    })
+    .catch( err => {
+        console.log("err",err);
+        res.status(500).json({
+            errors: err
+        });
+    });
+});
 
 
 module.exports = router;
