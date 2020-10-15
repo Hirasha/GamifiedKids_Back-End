@@ -316,7 +316,7 @@ router.post('/savemarks/:username', async function (req, res) {
 router.post('/getEmotion', async (req, res) => {
 
     var imageUri = req.body.image;
-
+    console.log("imageuri", imageUri)
     getEmotion(imageUri, function (response) {
         console.log(response[0])
         var emotions = response[0].faceAttributes.emotion;
@@ -342,11 +342,14 @@ router.post('/getEmotion', async (req, res) => {
 router.patch('/saveEmotions', async (req, res) => {
     let emotions = req.body.emotions;
     let username = req.body.username;
+    console.log("back end emotions", emotions);
     User.update({username: username}, { $set: {emotions: emotions}})
     .exec()
     .then( result => {
         console.log(result);
-        res.status(200).json(result);
+        res.status(200).json({
+            message: "emotions saved successfully"
+        });
     })
     .catch( err => {
         console.log("err",err);
