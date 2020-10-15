@@ -20,12 +20,13 @@ const UserSchema = mongoose.Schema({
         type: [{
             game_id: { type: String },
             marks: { type: Number },
-            time_spent: { type: String }
+            time_spent: { type: String },
+            emotions: {
+                type: Array
+            }
         }]
     },
-    emotions: {
-        type: Array
-    }
+    
 });
 
 UserSchema.statics.hashPassword = function hashPassword(password) {
