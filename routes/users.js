@@ -254,19 +254,20 @@ router.post('/savemarks/:username', async function (req, res) {
     const id = req.params.username;
     const user = await User.findOne({ username: id });
     var completed_games = req.body.completed_games;
-
-
+    // var emotions = req.body.emotions;
+    console.log("completed_games",completed_games)
 
     if (user) {
 
         var old_games = [];
+        
 
         user.completed_games.forEach((obj, i) => {
             var array = {};
             array.game_id = obj.game_id;
             array.marks = obj.marks;
             array.time_spent = obj.time_spent;
-
+            array.emotions = obj.emotions;
             old_games.push(array);
         });
 
@@ -276,7 +277,7 @@ router.post('/savemarks/:username', async function (req, res) {
             new_array.game_id = obj.game_id;
             new_array.marks = obj.marks;
             new_array.time_spent = obj.time_spent;
-
+            new_array.emotions = obj.emotions;
             old_games.push(new_array);
 
         });
@@ -319,9 +320,11 @@ router.post('/getEmotion', async (req, res) => {
     console.log("imageuri", imageUri)
     getEmotion(imageUri, function (response) {
         console.log(response[0])
-        var emotions = response[0].faceAttributes.emotion;
-        console.log("emotions", emotions);
+        
+        
         if (response[0] != undefined) {
+            var emotions = response[0].faceAttributes.emotion;
+            console.log("emotions", emotions);
             const emotion = Object.entries(emotions).reduce((a, b) => a[1] > b[1] ? a : b)[0]
             res.status(200).json({
                 message: "emotion detected",
@@ -339,25 +342,7 @@ router.post('/getEmotion', async (req, res) => {
 
 });
 
-router.patch('/saveEmotions', async (req, res) => {
-    let emotions = req.body.emotions;
-    let username = req.body.username;
-    console.log("back end emotions", emotions);
-    User.update({username: username}, { $set: {emotions: emotions}})
-    .exec()
-    .then( result => {
-        console.log(result);
-        res.status(200).json({
-            message: "emotions saved successfully"
-        });
-    })
-    .catch( err => {
-        console.log("err",err);
-        res.status(500).json({
-            errors: err
-        });
-    });
-});
+
 
 
 module.exports = router;
