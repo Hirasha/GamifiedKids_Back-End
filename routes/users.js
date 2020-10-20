@@ -1,6 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const User = require('../models/User');
+const Subject = require('../models/Subjects');
+const Level = require('../models/Level');
+const Game = require('../models/Games');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
 require("dotenv/config");
@@ -312,7 +315,7 @@ router.post('/savemarks/:username', async function (req, res) {
     
     });
 
-//to get level vise marks of a student
+
 
 router.post('/getEmotion', async (req, res) => {
 
@@ -342,6 +345,162 @@ router.post('/getEmotion', async (req, res) => {
 
 });
 
+
+router.get("/getdetails/:username", async (req, res) => {
+    try {
+        const id = req.params.username;
+        const user = await User.findOne({ username: id });
+
+        if (user) {
+        var student = ({
+            stu_name : user.studentname,
+            username : user.username,
+            grade : user.grade,
+            totalMarks : user.totalMarks,
+            completed_games : user.completed_games
+
+        })
+            res.status(200).json(student);
+        } else {
+            res.status(404).json({ message: "No valid entry found" });
+        }
+    } catch (err) {
+        res.status(500).json({ message: err });
+    }
+});
+
+
+router.get("/getmarks/:username", async (req, res) => {
+    try {
+        const id = req.params.username;
+        const user = await User.findOne({ username: id });
+
+        if (user) {
+            res.status(200).json(user.totalMarks);
+        } else {
+            res.status(404).json({ message: "No valid entry found" });
+        }
+    } catch (err) {
+        res.status(500).json({ message: err });
+    }
+});
+
+router.get("/getcompletedgames/:username", async (req, res) => {
+    try {
+      
+        const id = req.params.username;
+        const user = await User.findOne({ username: id });
+       
+        if (user) {
+            var games = [];
+            var final = [];
+            user.completed_games.forEach((obj, i) => {
+                var array = {};
+                array.game_id = obj.game_id;
+                array.marks = obj.marks;
+                array.time_spent = obj.time_spent;
+                games.push(array);
+            });
+            games.forEach(async (obj, i) => {
+                    const game = await Game.findOne({ game_id: obj.game_id });
+                // console.log(i);
+                    if (game) {
+                    var subjectid = game.subject_id;
+                    const subject = await Subject.findOne({ sub_id: subjectid });
+                        if (subject){
+                            var final_array = {}
+                                final_array.game_id = obj.game_id;
+                                final_array.subject = subject.sub_name;
+                                final_array.game_name = game.game_name;
+                                final_array.game_name = game.game_name;
+                                final_array.level = game.level_id;
+                                final_array.marks = obj.marks;
+                                final_array.time_spent = obj.time_spent;                 
+                                final.push(final_array);
+
+                               if (i == (games.length-1)){
+                                res.status(200).json(final);
+                               }
+                                // console.log(final);
+                        }
+                         
+                    }
+ 
+            });    
+            // console.log(final);
+            // res.status(200).json(final);
+
+            
+        } else {
+            res.status(404).json({ message: "No valid entry found" });
+        }
+    } catch (err) {
+        res.status(500).json({ message: err });
+    }
+});
+
+router.get("/getgamesdetails/:gameid", async (req, res) => {
+    try {
+        const id = req.params.gameid;
+        const game = await Game.findOne({ game_id: id });
+
+        if (game) {
+        
+        var subjectid = game.subject_id;
+        // console.log(subjectid)
+        const subject = await Subject.findOne({ sub_id: subjectid });
+            if (subject){
+                // console.log(subject)
+                var gamedetails = ({
+                    subject : subject.sub_name,
+                    game_name : game.game_name,
+                    level : game.level_id,
+                })
+                console.log(gamedetails)
+                
+            } else{
+                res.status(404).json({ message: "No valid entry found" });
+            }
+    
+        } else {
+            res.status(404).json({ message: "No valid entry found" });
+        }
+    } catch (err) {
+        res.status(500).json({ message: err });
+    }
+});
+
+router.get("/getranks/:grade", async (req, res) => {
+
+    try {
+        const grade = req.params.grade;
+        var array= [];
+        const user = await User.find({ grade : grade});
+        if (user) {
+            user.forEach(async (obj, i) => {
+                var new_array = {};
+                new_array.username = obj.username;
+                new_array.totalMarks = obj.totalMarks;
+                new_array.completed_games = obj.completed_games.length;
+                array.push(new_array);
+                // console.log(new_array);
+            });
+            array.sort((a, b) => b.totalMarks - a.totalMarks);
+
+            array.forEach((e) => {
+            console.log(`${e.username} ${e.totalMarks} ${e.completed_games}`);
+});
+            res.status(200).json(array); 
+           
+        } else {
+            res.status(404).json({ message: "No valid entry found" });
+        }
+    } catch (err) {
+        res.status(500).json({ message: err });
+    }
+
+ 
+});
 
 
 

@@ -6,7 +6,7 @@ const http = require('http');
 const https = require('https');
 var request = require('request');
 const { type } = require("os");
-const Subject = require("../models/Subject");
+const Subject = require("../models/Subjects");
 
 router.get("/getallsubjects", async (req, res) => {
 

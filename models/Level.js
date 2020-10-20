@@ -1,15 +1,15 @@
 const mongoose = require("mongoose");
 
 
-const SubjectSchema = mongoose.Schema({
-    sub_id: {
+const LevelSchema = mongoose.Schema({
+    level_id: {
         type: String,
         require: true
     },
-    sub_name: {
+    subject_id: {
         type: String,
         require: true
     }
 });
 
-module.exports = mongoose.model("Subject", SubjectSchema);
+module.exports = mongoose.model("Level", LevelSchema);
