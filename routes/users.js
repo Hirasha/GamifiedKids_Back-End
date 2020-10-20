@@ -475,10 +475,14 @@ router.get("/getranks/:grade", async (req, res) => {
     try {
         const grade = req.params.grade;
         var array= [];
+        var final_array = [];
+        var rank = 0;
         const user = await User.find({ grade : grade});
         if (user) {
             user.forEach(async (obj, i) => {
                 var new_array = {};
+                // new_array.rank = rank+1;
+                // rank= rank+1;
                 new_array.username = obj.username;
                 new_array.totalMarks = obj.totalMarks;
                 new_array.completed_games = obj.completed_games.length;
@@ -486,11 +490,19 @@ router.get("/getranks/:grade", async (req, res) => {
                 // console.log(new_array);
             });
             array.sort((a, b) => b.totalMarks - a.totalMarks);
-
-            array.forEach((e) => {
-            console.log(`${e.username} ${e.totalMarks} ${e.completed_games}`);
+            array.forEach(async (obj, i) => {
+                var rankArray = {};
+                rankArray.username = obj.username;
+                rankArray.totalMarks = obj.totalMarks;
+                rankArray.completed_games = obj.completed_games;
+                rankArray.rank = rank + 1;
+                rank= rank+1;
+                final_array.push(rankArray);
+            });
+            final_array.forEach((e) => {
+            console.log(`${e.rank} ${e.username} ${e.totalMarks} ${e.completed_games}`);
 });
-            res.status(200).json(array); 
+            res.status(200).json(final_array); 
            
         } else {
             res.status(404).json({ message: "No valid entry found" });
