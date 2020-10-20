@@ -258,7 +258,7 @@ router.post('/savemarks/:username', async function (req, res) {
     const user = await User.findOne({ username: id });
     var completed_games = req.body.completed_games;
     // var emotions = req.body.emotions;
-    console.log("completed_games",completed_games)
+    // console.log("completed_games",completed_games)
 
     if (user) {
 
@@ -456,7 +456,7 @@ router.get("/getgamesdetails/:gameid", async (req, res) => {
                     game_name : game.game_name,
                     level : game.level_id,
                 })
-                console.log(gamedetails)
+                // console.log(gamedetails)
                 
             } else{
                 res.status(404).json({ message: "No valid entry found" });
@@ -500,7 +500,7 @@ router.get("/getranks/:grade", async (req, res) => {
                 final_array.push(rankArray);
             });
             final_array.forEach((e) => {
-            console.log(`${e.rank} ${e.username} ${e.totalMarks} ${e.completed_games}`);
+            // console.log(`${e.rank} ${e.username} ${e.totalMarks} ${e.completed_games}`);
 });
             res.status(200).json(final_array); 
            
