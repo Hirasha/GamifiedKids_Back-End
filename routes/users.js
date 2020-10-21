@@ -75,7 +75,8 @@ router.post('/register', async function (req, res) {
         password: User.hashPassword(req.body.password),
         grade: req.body.grade,
         faceId: req.body.faceId,
-        image: req.body.image
+        image: req.body.image,
+        totalMarks : 0
     });
     // console.log(user)
     let promise = user.save();
@@ -263,8 +264,17 @@ router.post('/savemarks/:username', async function (req, res) {
     if (user) {
 
         var old_games = [];
-        
-
+if (user.completed_games == null){
+    completed_games.forEach((obj, i) => {
+        var new_array = {};
+        new_array.game_id = obj.game_id;
+        new_array.marks = obj.marks;
+        new_array.time_spent = obj.time_spent;
+        new_array.emotions = obj.emotions;
+        old_games.push(new_array);
+    });
+}
+else {
         user.completed_games.forEach((obj, i) => {
             var array = {};
             array.game_id = obj.game_id;
@@ -285,7 +295,7 @@ router.post('/savemarks/:username', async function (req, res) {
 
         });
 
-
+    }
         user.completed_games = old_games;
 
 
