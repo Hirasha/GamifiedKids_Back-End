@@ -410,6 +410,7 @@ router.get("/getcompletedgames/:username", async (req, res) => {
                 array.marks = obj.marks;
                 array.time_spent = obj.time_spent;
                 games.push(array);
+                // console.log(games);
             });
             games.forEach(async (obj, i) => {
                     const game = await Game.findOne({ game_id: obj.game_id });
@@ -524,6 +525,28 @@ router.get("/getranks/:grade", async (req, res) => {
  
 });
 
+router.get("/getgamesfornav/:username", async (req, res) => {
+    try {
+        const id = req.params.username;
+        const user = await User.findOne({ username: id });
 
+        if (user) {
+            var games = [];
+            // var final = [];
+            user.completed_games.forEach((obj, i) => {
+                games.push(obj.game_id);
+            });
+        
+        // console.log(games);
+        res.status(200).json(games); 
+
+    
+        } else {
+            res.status(404).json({ message: "No valid entry found" });
+        }
+    } catch (err) {
+        res.status(500).json({ message: err });
+    }
+});
 
 module.exports = router;
