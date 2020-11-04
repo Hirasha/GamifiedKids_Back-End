@@ -12,6 +12,8 @@ const http = require('http');
 const https = require('https');
 var request = require('request');
 const { type } = require("os");
+var nodemailer = require('nodemailer');
+const { compareSync } = require("bcrypt");
 
 function getFaceId(imageUri, callBack) {
     var options = {
@@ -76,7 +78,9 @@ router.post('/register', async function (req, res) {
         grade: req.body.grade,
         faceId: req.body.faceId,
         image: req.body.image,
-        totalMarks : 0
+        totalMarks : 0,
+        mL1 : 0,
+        mL2 : 0
     });
     // console.log(user)
     let promise = user.save();
@@ -367,8 +371,9 @@ router.get("/getdetails/:username", async (req, res) => {
             username : user.username,
             grade : user.grade,
             totalMarks : user.totalMarks,
-            completed_games : user.completed_games
-
+            completed_games : user.completed_games,
+            mL1 : user.mL1,
+            mL2: user.mL2
         })
             res.status(200).json(student);
         } else {
@@ -547,6 +552,141 @@ router.get("/getgamesfornav/:username", async (req, res) => {
     } catch (err) {
         res.status(500).json({ message: err });
     }
+});
+
+router.post("/sendemail/:username", async (req, res) => {
+try{
+    const id = req.params.username;
+    const user = await User.findOne({ username: id });
+    var level_completed = req.body.level_completed;
+
+    if (user){
+        var subject;
+        var level;
+        var column;
+        level_completed.forEach((obj, i) => {
+            subject = obj.subject;
+            level = obj.level;
+            column = obj.column;
+        });
+        
+
+        gamelist = [];
+        final = [];
+        level_completed.forEach((obj, i) => {
+            (obj.games).forEach(function(item) {
+                gamelist.push(item);
+              })
+        });
+
+
+    completed = user.completed_games;
+    completed.forEach((obj, i) => {
+        (gamelist).forEach(function(item) {
+            if (obj.game_id == item){
+                new_array = {};
+                new_array.game_id = obj.game_id;
+                new_array.marks = obj.marks;
+                new_array.time_spent = obj.time_spent;
+                final.push(new_array);
+            }
+          })
+        });
+
+        finallist = [];
+    final.forEach(async (obj, i) => {
+
+            const game = await Game.findOne({ game_id: obj.game_id });
+            if (game) {
+
+                    final_array = {};
+                    final_array.game_name = game.game_name,
+                    final_array.marks = obj.marks,
+                    final_array.time_spent = obj.time_spent
+                        finallist.push(final_array);
+                    
+                        
+
+                    if ( i == (final.length-1)){
+ 
+  
+                        var transporter = nodemailer.createTransport({
+                            service: 'gmail',
+                            auth: {
+                              user: 'gamifiedkids@gmail.com',
+                              pass: 'RESEARCH2020'
+                            }
+                          });
+                        // var transporter = nodemailer.createTransport({
+                        //     host: "smtp.mailtrap.io",
+                        //     port: 2525,
+                        //     auth: {
+                        //       user: "a08fb2b07fd5e1",
+                        //       pass: "e5a5a077926f57"
+                        //     }
+                        //   });
+                          let message = (
+                            '<body style = "background-color: #FFEFD5; border: 1px solid #333">'+
+                            '<div>'+
+                            '<h3>සුබ පැතුම්! ඔබේ දරුවා පුංචි නැණසල  '+ subject + '  විශයෙහි පියවර '+ level +
+                            '  ට අදාළ සියලු ක්‍රියාකාරකම් සම්පුර්ණ කර ඇත! '+ '</h3>' +
+                            '</div>'+
+                            '<table style="border: 1px solid #333;margin-left : 50px">' +
+                            '<thead>' +
+                            '<th style="text-align: center;" > ක්‍රියාකාරකම </th>' +
+                            '<th style="text-align: center; width: 100px"> ලකුණු </th>'  +
+                            '<th style="text-align: center; width: 100px"> ගත කල කාලය </th>'  +
+                            '</thead>'
+                          );
+
+                          for(const { game_name, marks, time_spent} of finallist) {
+                            message += (
+                              '<tr>' +
+                               '<td style="text-align: center;">' + game_name + '</td>' +
+                               '<td style="text-align: center;">' + marks + '</td>' +
+                               '<td style="text-align: center;">' + time_spent + '</td>' +
+                             '</tr>'
+                            );
+                         }
+                        
+                         message +=  '</table>'+'</body>';
+
+                          var mailOptions = {
+                            from: 'gamifiedkids@gmail.com',
+                            to: user.email,
+                            subject: 'GamifiedKids - Level Completion',
+                            html: message
+                          };
+                        
+                          transporter.sendMail(mailOptions, function(error, info){
+                            if (error) {
+                              console.log(error);
+                            } else {
+                                res.status(200).json('Email sent: ' + info.response); 
+                                if (column == 1){
+                                    user.mL1 = 1;
+                                    user.save();
+                                }
+                                else if (column == 2){
+                                    user.mL2 = 1;
+                                    user.save();
+                                }
+                                
+                            //   console.log('Email sent: ' + info.response);
+                            }
+                          });
+                    }
+            }
+    }); 
+
+
+    }
+    // res.status(200).json(finallist); 
+
+} catch (err) {
+    res.status(500).json({ message: err });
+}
+
 });
 
 module.exports = router;

@@ -8,6 +8,8 @@ const UserSchema = mongoose.Schema({
 
     password: { type: String, required: true },
 
+    email: { type: String },
+
     faceId: { type: String, required: true },
 
     grade: { type: String, required: true },
@@ -26,6 +28,9 @@ const UserSchema = mongoose.Schema({
             }
         }]
     },
+
+    mL1 : { type: Number },
+    mL2 : { type: Number },
     
 });
 
