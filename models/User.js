@@ -23,14 +23,17 @@ const UserSchema = mongoose.Schema({
             game_id: { type: String },
             marks: { type: Number },
             time_spent: { type: String },
-            emotions: {
-                type: Array
-            }
+            emotions: { type: Array },
+            max_idle_time : { type: Number }
         }]
     },
 
     mL1 : { type: Number },
     mL2 : { type: Number },
+    sL1 : { type: Number },
+    sL2 : { type: Number },
+    eL1 : { type: Number },
+    eL2 : { type: Number },
     
 });
 

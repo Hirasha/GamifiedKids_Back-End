@@ -80,7 +80,11 @@ router.post('/register', async function (req, res) {
         image: req.body.image,
         totalMarks : 0,
         mL1 : 0,
-        mL2 : 0
+        mL2 : 0,
+        sL1 : 0,
+        sL2 : 0,
+        eL1 : 0,
+        eL2 : 0
     });
     // console.log(user)
     let promise = user.save();
@@ -275,6 +279,7 @@ if (user.completed_games == null){
         new_array.marks = obj.marks;
         new_array.time_spent = obj.time_spent;
         new_array.emotions = obj.emotions;
+        new_array.max_idle_time = obj.max_idle_time;
         old_games.push(new_array);
     });
 }
@@ -285,6 +290,7 @@ else {
             array.marks = obj.marks;
             array.time_spent = obj.time_spent;
             array.emotions = obj.emotions;
+            array.max_idle_time = obj.max_idle_time;
             old_games.push(array);
         });
 
@@ -295,6 +301,7 @@ else {
             new_array.marks = obj.marks;
             new_array.time_spent = obj.time_spent;
             new_array.emotions = obj.emotions;
+            new_array.max_idle_time = obj.max_idle_time;
             old_games.push(new_array);
 
         });
