@@ -14,6 +14,7 @@ var request = require('request');
 const { type } = require("os");
 var nodemailer = require('nodemailer');
 const { compareSync } = require("bcrypt");
+const { getMaxListeners } = require("../models/User");
 
 function getFaceId(imageUri, callBack) {
     var options = {
@@ -571,10 +572,12 @@ try{
         var subject;
         var level;
         var column;
+        var gr;
         level_completed.forEach((obj, i) => {
             subject = obj.subject;
             level = obj.level;
             column = obj.column;
+            gr = obj.grade;
         });
         
 
@@ -633,12 +636,16 @@ try{
                         //     }
                         //   });
                           let message = (
-                            '<body style = "background-color: #FFEFD5; border: 1px solid #333">'+
+                            '<body style = "background-color: #e3deff; border: 1px solid #333">'+
                             '<div>'+
                             '<h3>සුබ පැතුම්! ඔබේ දරුවා පුංචි නැණසල  '+ subject + '  විශයෙහි පියවර '+ level +
                             '  ට අදාළ සියලු ක්‍රියාකාරකම් සම්පුර්ණ කර ඇත! '+ '</h3>' +
                             '</div>'+
-                            '<table style="border: 1px solid #333;margin-left : 50px">' +
+                            '<div>'+
+                            '<h4>දරුවාගෙ නම : '+ user.studentname +'</h4>' +
+                            '<h4> ශ්‍රේණිය : '+ gr +'</h4>' +
+                            '</div>'+
+                            '<table style="border: 1px solid #333;margin-left : 20px">' +
                             '<thead>' +
                             '<th style="text-align: center;" > ක්‍රියාකාරකම </th>' +
                             '<th style="text-align: center; width: 100px"> ලකුණු </th>'  +
