@@ -507,7 +507,7 @@ router.get("/getranks/:grade", async (req, res) => {
                 var new_array = {};
                 // new_array.rank = rank+1;
                 // rank= rank+1;
-                new_array.username = obj.username;
+                new_array.username = obj.studentname;
                 new_array.totalMarks = obj.totalMarks;
                 new_array.completed_games = obj.completed_games.length;
                 array.push(new_array);
