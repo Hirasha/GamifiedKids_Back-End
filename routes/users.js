@@ -425,7 +425,8 @@ router.get("/getcompletedgames/:username", async (req, res) => {
                 games.push(array);
                 // console.log(games);
             });
-            games.forEach(async (obj, i) => {
+            for (const obj of games){
+            // games.forEach(async (obj, i) => {
                     const game = await Game.findOne({ game_id: obj.game_id });
                 // console.log(i);
                     if (game) {
@@ -442,17 +443,17 @@ router.get("/getcompletedgames/:username", async (req, res) => {
                                 final_array.time_spent = obj.time_spent;                 
                                 final.push(final_array);
 
-                               if (i == (games.length-1)){
-                                res.status(200).json(final);
+                            //    if (i == (games.length-1)){
+                            //     res.status(200).json(final);
                                }
                                 // console.log(final);
                         }
                          
                     }
  
-            });    
+               
             // console.log(final);
-            // res.status(200).json(final);
+            res.status(200).json(final);
 
             
         } else {
@@ -567,135 +568,107 @@ try{
     const id = req.params.username;
     const user = await User.findOne({ username: id });
     var level_completed = req.body.level_completed;
-
-    if (user){
-        var subject;
-        var level;
-        var column;
-        var gr;
-        level_completed.forEach((obj, i) => {
-            subject = obj.subject;
-            level = obj.level;
-            column = obj.column;
-            gr = obj.grade;
-        });
-        
-
-        gamelist = [];
-        final = [];
-        level_completed.forEach((obj, i) => {
-            (obj.games).forEach(function(item) {
-                gamelist.push(item);
-              })
-        });
-
-
-    completed = user.completed_games;
-    completed.forEach((obj, i) => {
-        (gamelist).forEach(function(item) {
-            if (obj.game_id == item){
-                new_array = {};
-                new_array.game_id = obj.game_id;
-                new_array.marks = obj.marks;
-                new_array.time_spent = obj.time_spent;
-                final.push(new_array);
-            }
-          })
-        });
-
-        finallist = [];
-    final.forEach(async (obj, i) => {
-
-            const game = await Game.findOne({ game_id: obj.game_id });
-            if (game) {
-
-                    final_array = {};
-                    final_array.game_name = game.game_name,
-                    final_array.marks = obj.marks,
-                    final_array.time_spent = obj.time_spent
-                        finallist.push(final_array);
-                    
-                        
-
-                    if ( i == (final.length-1)){
- 
-  
-                        var transporter = nodemailer.createTransport({
-                            service: 'gmail',
-                            auth: {
-                              user: 'gamifiedkids@gmail.com',
-                              pass: 'RESEARCH2020'
-                            }
-                          });
-                        // var transporter = nodemailer.createTransport({
-                        //     host: "smtp.mailtrap.io",
-                        //     port: 2525,
-                        //     auth: {
-                        //       user: "a08fb2b07fd5e1",
-                        //       pass: "e5a5a077926f57"
-                        //     }
-                        //   });
-                          let message = (
-                            '<body style = "background-color: #e3deff; border: 1px solid #333">'+
-                            '<div>'+
-                            '<h3>සුබ පැතුම්! ඔබේ දරුවා පුංචි නැණසල  '+ subject + '  විශයෙහි පියවර '+ level +
-                            '  ට අදාළ සියලු ක්‍රියාකාරකම් සම්පුර්ණ කර ඇත! '+ '</h3>' +
-                            '</div>'+
-                            '<div>'+
-                            '<h4>දරුවාගෙ නම : '+ user.studentname +'</h4>' +
-                            '<h4> ශ්‍රේණිය : '+ gr +'</h4>' +
-                            '</div>'+
-                            '<table style="border: 1px solid #333;margin-left : 20px">' +
-                            '<thead>' +
-                            '<th style="text-align: center;" > ක්‍රියාකාරකම </th>' +
-                            '<th style="text-align: center; width: 100px"> ලකුණු </th>'  +
-                            '<th style="text-align: center; width: 100px"> ගත කල කාලය </th>'  +
-                            '</thead>'
-                          );
-
-                          for(const { game_name, marks, time_spent} of finallist) {
-                            message += (
-                              '<tr>' +
-                               '<td style="text-align: center;">' + game_name + '</td>' +
-                               '<td style="text-align: center;">' + marks + '</td>' +
-                               '<td style="text-align: center;">' + time_spent + '</td>' +
-                             '</tr>'
-                            );
-                         }
-                        
-                         message +=  '</table>'+'</body>';
-
-                          var mailOptions = {
-                            from: 'gamifiedkids@gmail.com',
-                            to: user.email,
-                            subject: 'GamifiedKids - Level Completion',
-                            html: message
-                          };
-                        
-                          transporter.sendMail(mailOptions, function(error, info){
-                            if (error) {
-                              console.log(error);
-                            } else {
-                                res.status(200).json('Email sent: ' + info.response); 
-                                if (column == 1){
-                                    user.mL1 = 1;
-                                    user.save();
-                                }
-                                else if (column == 2){
-                                    user.mL2 = 1;
-                                    user.save();
-                                }
-                                
-                            //   console.log('Email sent: ' + info.response);
-                            }
-                          });
-                    }
-            }
-    }); 
-
-
+    if (!user){
+        res.status(500).json({ message: "user not found" });
+        return 
     }
-    // res.status(200).json(finallist); 
+    var subject = level_completed[0].subject;
+    var level = level_completed[0].level;
+    var column = level_completed[0].column;
+    var gr = level_completed[0].grade;
+
+    var gamelist = level_completed[0].games;
+
+    var final_Array1 = [];
+
+    for (const obj of user.completed_games){
+        for (const item of gamelist) {
+            if (obj.game_id == item){
+                const game = await Game.findOne({ game_id: obj.game_id });
+                var new_array = {
+                    game_id : obj.game_id,
+                    marks : obj.marks,
+                    time_spent : obj.time_spent,
+                    game_name : game.game_name,
+                    real_mark : game.real_mark
+                };
+                final_Array1.push(new_array);
+            }
+          }
+        };
+
+        var transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+              user: 'gamifiedkids@gmail.com',
+              pass: 'RESEARCH2020'
+            }
+          });
+
+
+        //   var transporter = nodemailer.createTransport({
+        //     host: "smtp.mailtrap.io",
+        //     port: 2525,
+        //     auth: {
+        //       user: "a08fb2b07fd5e1",
+        //       pass: "e5a5a077926f57"
+        //     }
+        //   });
+
+          let message = (
+            '<body style = "background-color: #e3deff; border: 1px solid #333">'+
+            '<div>'+
+            '<h3>සුබ පැතුම්! ඔබේ දරුවා පුංචි නැණසල  '+ subject + '  විෂයෙහි පියවර '+ level +
+            '  ට අදාළ සියලු ක්‍රියාකාරකම් සම්පුර්ණ කර ඇත! '+ '</h3>' +
+            '</div>'+
+            '<div>'+
+            '<h4>දරුවාගෙ නම : '+ user.studentname +'</h4>' +
+            '<h4> ශ්‍රේණිය : '+ gr +'</h4>' +
+            '</div>'+
+            '<table style="border: 1px solid #333;margin-left : 20px">' +
+            '<thead>' +
+            '<th style="text-align: center;" > ක්‍රියාකාරකම </th>' +
+            '<th style="text-align: center; width: 100px"> ලකුණු </th>'  +
+            '<th style="text-align: center; width: 100px"> ගත කල කාලය </th>'  +
+            '</thead>'
+          );
+
+          for(const { game_name, marks, time_spent, real_mark} of final_Array1) {
+            message += (
+              '<tr>' +
+               '<td style="text-align: center;">' + game_name + '</td>' +
+               '<td style="text-align: center;">' + marks + ' / '+ real_mark +'</td>' +
+               '<td style="text-align: center;">' + time_spent + '</td>' +
+             '</tr>'
+            );
+         }
+        
+         message +=  '</table>'+'</body>';
+
+          var mailOptions = {
+            from: 'gamifiedkids@gmail.com',
+            to: user.email,
+            subject: 'GamifiedKids - Level Completion',
+            html: message
+          };
+        
+          transporter.sendMail(mailOptions, function(error, info){
+            if (error) {
+                res.status(500).json({ message: error });
+            } else {
+                res.status(200).json('Email sent: ' + info.response); 
+                if (column == 1){
+                    user.mL1 = 1;
+                    user.save();
+                }
+                else if (column == 2){
+                    user.mL2 = 1;
+                    user.save();
+                }
+                
+            }
+          });
+        
 
 } catch (err) {
     res.status(500).json({ message: err });

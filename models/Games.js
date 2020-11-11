@@ -17,7 +17,8 @@ const GamesSchema = mongoose.Schema({
     subject_id: {
         type: String,
         require: true
-    }
+    },
+    real_mark: { type: Number }
 
 });
 
