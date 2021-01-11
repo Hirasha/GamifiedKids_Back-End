@@ -381,7 +381,9 @@ router.get("/getdetails/:username", async (req, res) => {
             totalMarks : user.totalMarks,
             completed_games : user.completed_games,
             mL1 : user.mL1,
-            mL2: user.mL2
+            mL2: user.mL2,
+            sL1: user.sL1,
+            sL2 : user.sL2
         })
             res.status(200).json(student);
         } else {
@@ -664,6 +666,14 @@ try{
                 }
                 else if (column == 2){
                     user.mL2 = 1;
+                    user.save();
+                }
+                else if (column == 3){
+                    user.sL1 = 1;
+                    user.save();
+                }
+                else if (column == 4){
+                    user.sL2 = 1;
                     user.save();
                 }
                 
